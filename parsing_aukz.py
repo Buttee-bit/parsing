@@ -2,9 +2,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-import random
 import time
-from fake_useragent import UserAgent
 import csv
 # Создаем класс
 class Parsing_Aukz:
@@ -14,10 +12,9 @@ class Parsing_Aukz:
         print(f'Создан {self.name} парсер')
 
     def get_fake_UserAgent(self):
-        fake_UserAgent = UserAgent().chrome
         headers = {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'User-Agent': fake_UserAgent
+            'Accept': '*/*',
+            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"
         }
         return headers
 
@@ -30,6 +27,16 @@ class Parsing_Aukz:
             time.sleep(0.5)
             page = r.text
             self.save_html_page(page,count)
+
+    def get_pagination(self):
+        r = requests.get(self.link).text
+        soup = BeautifulSoup(r,'lxml')
+        list_page = int(soup.find('p').find_all('a')[-1].text[1:-1])
+        return list_page
+
+    def get_number_aukz(self):
+        number_aukz = int(input())
+        return number_aukz
 
     def save_html_page(self,page,count):
         with open(f"data_aukz/data_page_{str(count)}.html", 'w', encoding='utf-8') as file:
@@ -87,7 +94,7 @@ class Parsing_Aukz:
 
 
     def main(self):
-        match = int(input('Введите количество страниц\n'))
+        match = self.get_pagination()
         match *= 20
         count = 1
         content = []
@@ -97,14 +104,27 @@ class Parsing_Aukz:
             self.get_reguest(self.link,fake_UserAgent,i,count,match)
             content += self.get_content(f'data_aukz/data_page_{count}.html')
             count += 1
-        self.save_json_file(content, f'data_aukz_json/page_aukz_.json')
-        self.save_csv_file(f'data_aukz_csv/data.csv',content,data_head)
+        self.save_json_file(content, f'data_aukz{number}_.json')
+        self.save_csv_file(f'data{number}.csv',content,data_head)
 
 
 
 
 name = 'Дедушкин парсер'
-link = 'http://www.auction.spb.ru/?auctID=338&catID=&order=numblot&foll=&p='
+link = 'http://www.auction.spb.ru/?auctID='
 
-Dadyshkagoga = Parsing_Aukz(name,link)
+def change_link_aukz(link):
+    print('Действующий аукцион 340')
+    add_link = f'{number}&catID=&order=numblot&foll=&p='
+    link += add_link
+    return link
+
+def get_number_aukz():
+    print('Введите номер аукциона который вы хотите узнать')
+    number = input()
+    return number
+
+number = get_number_aukz()
+
+Dadyshkagoga = Parsing_Aukz(name,change_link_aukz(link))
 Dadyshkagoga.main()
