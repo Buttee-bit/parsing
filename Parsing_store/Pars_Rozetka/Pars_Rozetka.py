@@ -3,13 +3,10 @@ import requests
 import csv
 
 
-
-
-
-def request(url,config):
-    r = requests.get(url,headers=config)
+def request(url, headers):
+    r = requests.get(url, headers=headers)
     if r.status_code == 200:
-        return r.text
+        return r.content
     else:
         print('Ошибка подключения')
 
@@ -21,9 +18,20 @@ def config():
     }
     return headers
 
+
+def get_list_category(requests_main_page_text):
+    soup = BeautifulSoup(requests_main_page_text, 'lxml')
+
+    category = soup.find_all(class_='menu-categories__link')
+    list_category = []
+    for i in category[0:19]:
+        list_category.append(i.get('href'))
+    return list_category
+
 def main():
     headers = config()
     url = "https://rozetka.com.ua/ua/"
-    request(url,headers)
+    get_list_category(request(url, headers))
+
 
 main()
