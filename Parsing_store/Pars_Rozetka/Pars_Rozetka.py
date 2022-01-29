@@ -24,6 +24,6 @@ def config():
 def main():
     headers = config()
     url = "https://rozetka.com.ua/ua/"
-    print(request(url,headers))
+    request(url,headers)
 
 main()
