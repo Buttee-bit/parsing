@@ -28,10 +28,23 @@ def get_list_category(requests_main_page_text):
         list_category.append(i.get('href'))
     return list_category
 
+
+def get_list_category_next(index_link, header):
+    r = request(index_link, headers=header)
+    soup = BeautifulSoup(r,'lxml')
+    list_links_category_next = soup.find_all(class_='tile-cats__picture')
+    list_link = []
+    for i in list_links_category_next[0:18]:
+        print(i)
+        list_link.append(i.get('href'))
+    print(list_link)
+
 def main():
     headers = config()
     url = "https://rozetka.com.ua/ua/"
-    get_list_category(request(url, headers))
+    list_links_category = get_list_category(request(url, headers))
+    print(list_links_category[0])
+    list_links_category_next = get_list_category_next(list_links_category[0],headers)
 
 
 main()
