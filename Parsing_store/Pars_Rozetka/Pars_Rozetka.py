@@ -14,7 +14,8 @@ def request(url, headers):  # дает код страницы
 def config():  # конфигурация к реквест запросу
     headers = {
         'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/92.0.4515.107 Safari/537.36 '
     }
     return headers
 
@@ -37,6 +38,7 @@ def get_list_category_next(index_link, headers):  # Дает лист ссыло
     for i in list_links_category_next[0:18]:  # +- также костыль
         list_link.append(i.get('href'))
     return list_link
+
 
 #  В этой функции дописать , что если не найдены значения , то забить , там другая структура сайта
 def get_pagination_page_and_soup(page, headers):  # Дает интовое значение последней страницы
@@ -70,7 +72,7 @@ def get_open_card(list_page_card, headers):  # Открываем карточк
     return list_cards_link
 
 
-def get_content(list_cards_link, headers): # Получаем информацию с карточки
+def get_content(list_cards_link, headers):  # Получаем информацию с карточки
     r = request(list_cards_link, headers=headers)
     soup = BeautifulSoup(r, 'lxml')
     product = []
@@ -101,23 +103,47 @@ def get_only_digit(soup_obj):
     return only_digit + ' гривней'
 
 
+def save_info_next_category(name_category, data):
+    name_category = 'data_Rozetka/' + name_category.split('/')[-3]
+    data_head = ['name', 'price', 'info']
+    print(name_category)
+    with open(f'{name_category}.csv', 'w', newline='') as f:
+        writer = csv.writer(f, delimiter=';')
+        writer.writerow(data_head)
+        for item in data:
+            try:
+                writer.writerow(
+                    [item['name'], item['price'], item['info'], ])
+            except:
+                pass
+
+
 def main():
     headers = config()
     url = "https://rozetka.com.ua/ua/"
     list_links_category = get_list_category(request(url, headers))
-    print(list_links_category)
-    for category in list_links_category: # Проходимся по категория в списке ссылок категорий
-        list_links_category_next = get_list_category_next(category, headers) # Получаем список ссылок на подгатегории
-        print(list_links_category_next)
-        for next_category in list_links_category_next: # Из всех подкатегории проходимся по всем
-            list_page_card = get_list_page_card(next_category, headers)
-            print('Вызывется get_list_page_card')
-            for page in list_page_card:
+    for category in list_links_category[0:2]:  # Проходимся по категория в списке ссылок категорий
+        try:
+            list_links_category_next = get_list_category_next(category,
+                                                              headers)  # Получаем список ссылок на подгатегории
+        except:
+            pass
+        for next_category in list_links_category_next[0:2]:  # Из всех подкатегории проходимся по всем
+            try:
+                list_page_card = get_list_page_card(next_category, headers)
+            except:
+                pass
+            for page in list_page_card[0:2]:
                 print(page)
-                #list_cards_link = get_open_card(page, headers)
-                #for card in list_cards_link:
-                #    card_info = get_content(card, headers)
-                #    print('Работает ')
+                list_cards_link = get_open_card(page, headers)
+                for card in list_cards_link[0:1]:
+                    print(card)
+                    try:
+                        card_info = get_content(card, headers)
+                    except:
+                        pass
+                    print('Сохраняем данные...')
+                    save_info_next_category(next_category, card_info)
 
 
 main()
