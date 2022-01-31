@@ -4,8 +4,8 @@ from selenium.webdriver.common.by import By
 import time
 import random
 
-user = 'bstislavsk_' # Имя нашего пользователя
-userPassword = 'FreeRollPlay' # Наш пароль
+user = '' # Имя нашего пользователя
+userPassword = '' # Наш пароль
 browser = webdriver.Chrome('chromedriver.exe')
 
 
